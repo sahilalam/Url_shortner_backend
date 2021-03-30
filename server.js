@@ -322,7 +322,7 @@ app.get('/verify_token&get_user_details',async(req,res)=>{
     }
     catch(err)
     {
-        res.status.json({
+        res.status(500).json({
             message:err.message
         })
     }
