@@ -244,15 +244,25 @@ app.post('/generate',async(req,res)=>{
     try{
         let access_token=req.headers.authorization;
         let decoded=await jwt.verify(access_token,process.env.KEY);
-        let email=decoded.email;
-        let full=req.body.full;
-        let short=await generateShort();
-        await addUrl(short,full,email,checkEmail,updateUrl);
-        res.status(201).json(
-            {
-                new_url:req.get("host")+'/'+short
-            }
-        )
+        if(decoded)
+        {
+            let email=decoded.email;
+            let full=req.body.full;
+            let short=await generateShort();
+            await addUrl(short,full,email,checkEmail,updateUrl);
+            res.status(201).json(
+                {
+                    new_url:req.get("host")+'/'+short
+                }
+            )
+        }
+        else
+        {
+            res.status(401).json({
+                message:"Session Expired,Please Login Again!"
+            })
+        }
+
     }
     catch(err)
     {
@@ -265,11 +275,21 @@ app.post('/getallurl',async(req,res)=>{
     try{
         let access_token=req.headers.authorization;
         let decoded=await jwt.verify(access_token,process.env.KEY);
-        let data=await getAllUrl(decoded.email);
+        if(decoded)
+        {
+            let data=await getAllUrl(decoded.email);
         
-        res.status(200).json({
-            data
-        })
+            res.status(200).json({
+                data
+            })
+        }
+        else
+        {
+            res.status(401).json({
+                message:"Session Expired,Please Login Again!"
+            })
+        }
+        
 
     }
     catch(err)
@@ -279,6 +299,36 @@ app.post('/getallurl',async(req,res)=>{
         })
     }
 })
+
+app.get('/verify_token&get_user_details',async(req,res)=>{
+    try{
+        let access_token=req.headers.authorization;
+        let decoded=await jwt.verify(access_token,process.env.KEY);
+        if(decoded)
+        {
+            res.status(200).json(
+                {
+                    data:decoded
+                }
+            )
+        }
+        else
+        {
+            res.status(401).json({
+                message:"Session Expired,Please Login Again!"
+            })
+        }
+
+    }
+    catch(err)
+    {
+        res.status.json({
+            message:err.message
+        })
+    }
+
+})
+
 app.get('/:short',async(req,res)=>{
     try{
         let short=req.params.short;
