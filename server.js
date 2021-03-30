@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const cors=require('cors');
+const jwt=require('jsonwebtoken');
 
 
 const express=require('express');
@@ -44,7 +45,9 @@ app.use(express.urlencoded({extended:true}))
 
 
 
-const {checkEmail,addUser,login} =require('./db.js');
+const {checkEmail,addUser,login,checkUsername,updatePassword,getAllUrl,updateUrl} =require('./db/users.js');
+const {addUrl,getFullUrl}=require('./db/urls.js');
+const {generateShort}=require('./utilities/short_id_generator.js');
 
 
 app.post('/register',async(req,res)=>{
@@ -82,7 +85,7 @@ app.post('/register',async(req,res)=>{
     catch(err)
     {
         console.log(err);
-        res.status(400).json({
+        res.status(500).json({
             message:err.message
         });
     } 
@@ -98,21 +101,28 @@ app.post('/register/:encrypted_mail',async(req,res)=>{
         const password=req.body.password;
         if(username.length && password.length)
         {
-            const hash= await hashPass(password);
-            const data=await addUser(username,hash,email);
-            res.status(201).json({
-                message:"User Created!",
-                info:data
-            });
+            let check=await checkUsername(username);
+            if(check)
+            {
+                res.json({
+                    message:"Username already taken,try again with different username"
+                })
+            }
+            else
+            {
+                const hash= await hashPass(password);
+                await addUser(username,hash,email);
+                res.status(201).json({
+                    message:"User Created!"
+                });
+            }
         }
         else
         {
-            res.status(400).json({
+            res.status(500).json({
                 message:"Either Username or password is empty!"
             });
-        }
-            
-        
+        }  
 
     }
     catch(err)
@@ -123,6 +133,8 @@ app.post('/register/:encrypted_mail',async(req,res)=>{
         });
     }
 })
+
+
 app.post('/login',async(req,res)=>{
     let username=req.body.username;
     let password=req.body.password;
@@ -133,8 +145,15 @@ app.post('/login',async(req,res)=>{
             const result=await bcrypt.compare(password,data.password);
             if(result)
             {
+                const access_token =await jwt.sign({
+                    name:data.name,
+                    email:data.email
+                },process.env.KEY,{
+                    expiresIn:'1h'
+                });
                 res.status(200).json({
-                    data
+                    access_token
+                    
                 })
             }
             else
@@ -155,11 +174,129 @@ app.post('/login',async(req,res)=>{
     catch(err)
     {
         console.log(err);
-        res.status(400).json({
+        res.status(500).json({
             message:err.message
         });
     }
 }) 
+
+app.post('/forgot_password',async(req,res)=>{
+    try{
+        let email=req.body.email;
+        let check=await checkEmail(email);
+        if(check)
+        {
+            const encrypted_mail=base64.encode(email);
+           const href=`${process.env.FRONT_URL}/forgot_password/${encrypted_mail}`;
+           let html=`<a href=${href}>Click Here</a> to update your passowrd`;
+           
+           let info =await transporter.sendMail({
+               from:"Sahil Alam",
+               to:email,
+               subject:"Update your Password!",
+               html:`${html}`
+           });
+
+           res.status(200).json({
+               message:"Mail Sent !!! Please Check your mail"
+           })
+        }
+        else
+        {
+            res.status(404).json({
+                message:"No user fornd with this e-mail"
+            })
+        }
+
+    }
+    catch(err)
+    {
+        res.status(500).json(
+            {
+                message:err.message
+            }
+        )
+    }
+})
+
+app.put('/forgot_password/:encrypted_mail',async(req,res)=>{
+    try{
+        let encrypted_email=req.params.encrypted_mail;
+        let email=base64.decode(encrypted_email);
+        let password=req.body.password;
+        const hash=await hashPass(password);
+        await updatePassword(email,hash);
+        res.status(200).json({
+            message:"Password Updated! Please Login to continue.."
+        })
+    }
+    catch(err)
+    {
+        res.status(500).json(
+            {
+                message:err.message
+            }
+        )
+    }
+})
+
+app.post('/generate',async(req,res)=>{
+    try{
+        let access_token=req.headers.authorization;
+        let decoded=await jwt.verify(access_token,process.env.KEY);
+        let email=decoded.email;
+        let full=req.body.full;
+        let short=await generateShort();
+        await addUrl(short,full,email,checkEmail,updateUrl);
+        res.status(201).json(
+            {
+                new_url:req.get("host")+'/'+short
+            }
+        )
+    }
+    catch(err)
+    {
+        res.status(500).json({
+            message:err.message
+        })
+    }
+})
+app.post('/getallurl',async(req,res)=>{
+    try{
+        let access_token=req.headers.authorization;
+        let decoded=await jwt.verify(access_token,process.env.KEY);
+        let data=await getAllUrl(decoded.email);
+        
+        res.status(200).json({
+            data
+        })
+
+    }
+    catch(err)
+    {
+        res.status(500).json({
+            message:err.message
+        })
+    }
+})
+app.get('/:short',async(req,res)=>{
+    try{
+        let short=req.params.short;
+        let full=await getFullUrl(short);
+        res.status(200).json({
+            full:full
+        })
+    }
+    catch(err)
+    {
+        res.status(500).json({
+            message:err.message
+        })
+    }
+
+})
+
+
 
 
 app.listen(PORT,()=>{
