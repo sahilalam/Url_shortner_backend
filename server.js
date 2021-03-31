@@ -1,5 +1,5 @@
 require('dotenv').config();
-let urls=[];
+
 
 const cors=require('cors');
 const jwt=require('jsonwebtoken');
@@ -146,7 +146,6 @@ app.post('/login',async(req,res)=>{
             const result=await bcrypt.compare(password,data.password);
             if(result)
             {
-                urls=data.urls;
                 const access_token =await jwt.sign({
                     name:data.name,
                     email:data.email
@@ -154,7 +153,8 @@ app.post('/login',async(req,res)=>{
                     expiresIn:'1h'
                 });
                 res.status(200).json({
-                    access_token
+                    access_token,
+                    urls:data.urls
                     
                 })
             }
@@ -280,6 +280,7 @@ app.post('/getallurl/:offset',async(req,res)=>{
         if(decoded)
         {
             let offset=req.params.offset;
+            let urls=req.body.urls;
             let data=await getAllUrl(urls,offset);
         
             res.status(200).json({
