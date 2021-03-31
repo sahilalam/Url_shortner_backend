@@ -49,6 +49,7 @@ let getFullUrl=async(short)=>{
 }
 let getById=async(id)=>{
     try{
+        id=new objectId(id);
         const clientInfo=await mongoClient.connect(db_url);
         const db=await clientInfo.db(db_name);
         const data=await db.collection(url_collection).findOne({
