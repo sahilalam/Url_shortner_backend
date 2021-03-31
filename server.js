@@ -281,7 +281,7 @@ app.post('/getallurl/:offset',async(req,res)=>{
         {
             let offset=req.params.offset;
             let urls=req.body.urls.split(',');
-            console.log(urls)
+           
             let data=await getAllUrl(urls,offset);
         
             res.status(200).json({
