@@ -271,13 +271,14 @@ app.post('/generate',async(req,res)=>{
         })
     }
 })
-app.post('/getallurl',async(req,res)=>{
+app.post('/getallurl/:offset',async(req,res)=>{
     try{
         let access_token=req.headers.authorization;
         let decoded=await jwt.verify(access_token,process.env.KEY);
         if(decoded)
         {
-            let data=await getAllUrl(decoded.email);
+            let offset=req.params.offset;
+            let data=await getAllUrl(decoded.email,offset);
         
             res.status(200).json({
                 data

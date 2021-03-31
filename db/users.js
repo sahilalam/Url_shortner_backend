@@ -94,12 +94,12 @@ let updateUrl=async(email,urls)=>{
         throw err;
     }
 }
-let getAllUrl=async(email)=>{
+let getAllUrl=async(email,offset)=>{
    try{
         let data=await checkEmail(email);
         let urls=data.urls;
         let result=[];
-        for(let i=0;i<urls.length;i++)
+        for(let i=offset;i<urls.length && i<offset+5;i++)
         {
             let tmp=await getById(urls[i]);
             result.push(tmp);
