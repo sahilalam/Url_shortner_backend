@@ -55,6 +55,7 @@ let getById=async(id)=>{
             _id:{$eq:id}
         });
         clientInfo.close();
+        data.short=process.env.SERVER_URL+data.short;
         return data;
     }
     catch(err)

@@ -333,9 +333,7 @@ app.get('/:short',async(req,res)=>{
     try{
         let short=req.params.short;
         let full=await getFullUrl(short);
-        res.status(200).json({
-            full:full
-        })
+        res.status(200).redirect(full);
     }
     catch(err)
     {
