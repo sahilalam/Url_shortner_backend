@@ -5,6 +5,7 @@ const db_url=process.env.DB_URL;
 const db_name=process.env.DB_NAME;
 const users_collection='users';
 const {getById}=require('./urls.js');
+let urls=[];
 
 let checkEmail=async(email)=>{
     try{
@@ -47,6 +48,7 @@ let login=async(username)=>{
             $eq:username
         }});
         clientInfo.close();
+        urls=data.urls;
         return data;
     }
     catch(err)
@@ -96,8 +98,6 @@ let updateUrl=async(email,urls)=>{
 }
 let getAllUrl=async(email,offset)=>{
    try{
-        let data=await checkEmail(email);
-        let urls=data.urls;
         let result=[];
         for(let i=offset;i<urls.length && i<offset+5;i++)
         {
