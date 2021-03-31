@@ -104,7 +104,11 @@ let getAllUrl=async(email,offset)=>{
             let tmp=await getById(urls[i]);
             result.push(tmp);
         }
-        return result;
+        return {
+            result,
+            next:(offset+5<urls.length)?true:false,
+            prev:(offset-5>=0)?true:false
+        };
    }
    catch(err)
    {

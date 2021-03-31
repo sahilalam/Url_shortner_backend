@@ -281,7 +281,10 @@ app.post('/getallurl/:offset',async(req,res)=>{
             let data=await getAllUrl(decoded.email,offset);
         
             res.status(200).json({
-                data
+                data:data.result,
+                next:data.next,
+                prev:data.prev
+
             })
         }
         else
