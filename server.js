@@ -280,7 +280,8 @@ app.post('/getallurl/:offset',async(req,res)=>{
         if(decoded)
         {
             let offset=req.params.offset;
-            let urls=req.body.urls;
+            let urls=req.body.urls.split(',');
+           
             let data=await getAllUrl(urls,offset);
         
             res.status(200).json({
