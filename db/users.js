@@ -4,8 +4,6 @@ const mongoClient=mongodb.MongoClient;
 const db_url=process.env.DB_URL;
 const db_name=process.env.DB_NAME;
 const users_collection='users';
-const {getByIds}=require('./urls.js');
-const objectId=mongodb.ObjectId;
 
 
 let checkEmail=async(email)=>{
@@ -97,26 +95,7 @@ let updateUrl=async(email,urls)=>{
         throw err;
     }
 }
-let getAllUrl=async(urls,offset)=>{
-   try{
-        let data=[];
-        for(let i=offset;i<urls.length && i<offset+5;i++)
-        {
-            let id=new objectId(urls[i]);
-            data.push(id);
-        }
-        let result=await getByIds(data);
-        return {
-            result,
-            next:(offset+5<urls.length)?true:false,
-            prev:(offset-5>=0)?true:false
-        };
-   }
-   catch(err)
-   {
-       throw err;
-   }
-}
+
 module.exports={
-    checkEmail,addUser,login,checkUsername,updatePassword,updateUrl,getAllUrl
+    checkEmail,addUser,login,checkUsername,updatePassword,updateUrl
 }

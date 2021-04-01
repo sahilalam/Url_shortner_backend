@@ -46,8 +46,8 @@ app.use(express.urlencoded({extended:true}))
 
 
 
-const {checkEmail,addUser,login,checkUsername,updatePassword,getAllUrl,updateUrl} =require('./db/users.js');
-const {addUrl,getFullUrl}=require('./db/urls.js');
+const {checkEmail,addUser,login,checkUsername,updatePassword,updateUrl} =require('./db/users.js');
+const {addUrl,getFullUrl,getAllUrl}=require('./db/urls.js');
 const {generateShort}=require('./utilities/short_id_generator.js');
 
 
@@ -280,9 +280,9 @@ app.post('/getallurl/:offset',async(req,res)=>{
         if(decoded)
         {
             let offset=req.params.offset;
-            let urls=req.body.urls.split(',');
+            let user=await checkEmail(decoded.email);
            
-            let data=await getAllUrl(urls,offset);
+            let data=await getAllUrl(user.urls,offset);
         
             res.status(200).json({
                 data:data.result,

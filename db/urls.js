@@ -6,6 +6,7 @@ const mongoClient=mongodb.MongoClient;
 const db_url=process.env.DB_URL;
 const db_name=process.env.DB_NAME;
 const url_collection="urls";
+const objectId=mongodb.ObjectId;
 
 let addUrl=async(short,full,email,checkEmail,updateUrl)=>{
     try{
@@ -64,7 +65,26 @@ let getByIds=async(urls)=>{
         throw err;
     }
 }
-
+let getAllUrl=async(urls,offset)=>{
+    try{
+         let data=[];
+         for(let i=offset;i<urls.length && i<offset+5;i++)
+         {
+             let id=new objectId(urls[i]);
+             data.push(id);
+         }
+         let result=await getByIds(data);
+         return {
+             result,
+             next:(offset+5<urls.length)?true:false,
+             prev:(offset-5>=0)?true:false
+         };
+    }
+    catch(err)
+    {
+        throw err;
+    }
+ }
 module.exports={
-    addUrl,getFullUrl,getByIds
+    addUrl,getFullUrl,getByIds,getAllUrl
 }
