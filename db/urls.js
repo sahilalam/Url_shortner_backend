@@ -53,9 +53,9 @@ let getByIds=async(urls)=>{
         
         const clientInfo=await mongoClient.connect(db_url);
         const db=await clientInfo.db(db_name);
-        const data=await db.collection(url_collection).findOne({
+        const data=await db.collection(url_collection).find({
             _id:{$in:urls}
-        });
+        }).toArray();
         clientInfo.close();
         return data;
     }
