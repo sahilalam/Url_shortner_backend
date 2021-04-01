@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const mongodb=require('mongodb');
-const objectId=mongodb.ObjectId;
+
 const mongoClient=mongodb.MongoClient;
 const db_url=process.env.DB_URL;
 const db_name=process.env.DB_NAME;
@@ -12,7 +12,8 @@ let addUrl=async(short,full,email,checkEmail,updateUrl)=>{
         const clientInfo=await mongoClient.connect(db_url);
         const db=await clientInfo.db(db_name);
         const data=await db.collection(url_collection).insertOne({
-            short,full,hits:0
+            short:process.env.SERVER_URL+short
+            ,full,hits:0
         });
         const id=data.ops[0]._id;
         const user=await checkEmail(email);
@@ -47,16 +48,15 @@ let getFullUrl=async(short)=>{
     }
 
 }
-let getById=async(id)=>{
+let getByIds=async(urls)=>{
     try{
-        id=new objectId(id);
+        
         const clientInfo=await mongoClient.connect(db_url);
         const db=await clientInfo.db(db_name);
         const data=await db.collection(url_collection).findOne({
-            _id:{$eq:id}
+            _id:{$in:urls}
         });
         clientInfo.close();
-        data.short=process.env.SERVER_URL+data.short;
         return data;
     }
     catch(err)
@@ -66,5 +66,5 @@ let getById=async(id)=>{
 }
 
 module.exports={
-    addUrl,getFullUrl,getById
+    addUrl,getFullUrl,getByIds
 }
