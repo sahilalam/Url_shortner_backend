@@ -340,7 +340,7 @@ app.get('/verify_token&get_user_details',async(req,res)=>{
 
 app.get('/:short',async(req,res)=>{
     try{
-        let short=req.params.short;
+        let short=process.env.SERVER_URL+req.params.short;
         let full=await getFullUrl(short);
         res.status(200).redirect(full);
     }
