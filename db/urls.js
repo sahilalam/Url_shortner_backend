@@ -68,8 +68,9 @@ let getByIds=async(urls)=>{
 let getAllUrl=async(urls,offset)=>{
     try{
          let data=[];
-         for(let i=offset;i<urls.length && i<offset+5;i++)
+         for(let i=offset;i<urls.length && i<(offset+5);i++)
          {
+             console.log(i)
              let id=new objectId(urls[i]);
              data.push(id);
          }
